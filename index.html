@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Diseño Computarizado I - 4to Diseño - JRB</title>
+    <!-- Librería externa para generación de comprobantes en PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e293b; /* Slate 800 - Base industrial */
+            --primary-hover: #0f172a; /* Slate 900 */
+            --accent: #6c5ce7; /* Purple - Creatividad y Diseño */
+            --accent-hover: #5b4bc4; /* Purple oscuro */
+            --accent-light: #f5f4ff; /* Purple sutil para interacciones */
+            --light-bg: #f8fafc; /* Slate 50 - Fondo de pantalla */
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0; /* Slate 200 */
+            --text-muted: #64748b; /* Slate 500 */
+            --success: #10b981; /* Emerald 500 */
+            --success-light: #ecfdf5; /* Emerald 50 */
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--light-bg); 
+            margin: 0; 
+            padding: 40px 15px;
+            color: var(--primary);
+        }
+
+        .exam-card { 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+            border-top: 10px solid var(--accent);
+        }
+
+        /* Encabezado Principal con Gradiente Creativo */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 35px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+        }
+
+        .header-info h1 { 
+            margin: 0; 
+            font-size: 1.6rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+        .header-info p { 
+            margin: 6px 0 0; 
+            opacity: 0.85; 
+            font-size: 0.95rem; 
+            color: #94a3b8;
+        }
+
+        .logo-container {
+            width: 100px;
+            height: 100px;
+            background: white;
+            padding: 5px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Identificación del Estudiante (Ancho Completo) */
+        .student-section { 
+            padding: 25px 35px;
+            background: #fdfdfd;
+            border-bottom: 1px solid #f1f5f9;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .field { width: 100%; }
+        .field label { 
+            display: block; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            color: var(--accent); 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 0.8px;
+        }
+        .field input { 
+            width: 100%; 
+            padding: 14px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+            background-color: var(--card-bg);
+            color: var(--primary);
+        }
+        .field input:focus { 
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        /* Estructura de las Series */
+        .serie { 
+            padding: 35px 35px; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .serie-title { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid var(--accent); 
+            padding-left: 15px; 
+            margin-bottom: 15px; 
+        }
+        .serie-title h2 { margin: 0; font-size: 1.25rem; color: var(--primary); text-transform: uppercase; }
+        .badge-points {
+            background-color: var(--accent);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: bold;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+
+        .instruction-box {
+            background: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            border-radius: 6px;
+            color: #5b4bc4;
+        }
+        
+        .question { margin-bottom: 28px; }
+        .question p { margin-top: 0; font-weight: 600; font-size: 1rem; color: var(--primary); line-height: 1.5; }
+
+        /* Controles de Selección e Inputs Estéticos */
+        .options-container { display: grid; gap: 10px; }
+        .option-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 15px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+        .option-item:hover { border-color: var(--accent); background: var(--accent-light); }
+        .option-item input { margin-right: 12px; cursor: pointer; width: 16px; height: 16px; }
+
+        .select-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background-color: var(--card-bg);
+            color: var(--primary);
+            transition: border 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .select-input:focus { 
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        .case-container {
+            background-color: #f8fafc;
+            border: 1.5px dashed var(--accent);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Banner de Alerta */
+        .error-message {
+            display: none;
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 35px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Botón de Finalización */
+        .btn-container { padding: 40px 35px; text-align: center; }
+        .btn-submit { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 16px 50px; 
+            font-size: 1.15rem; 
+            font-weight: bold; 
+            border-radius: 50px; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
+        }
+        .btn-submit:hover { 
+            background: var(--accent-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+        }
+
+        #result-banner {
+            display: none;
+            margin: 20px 35px;
+            padding: 25px;
+            background: var(--success-light);
+            color: #065f46;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 1px solid #a7f3d0;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="exam-card">
+    <header class="header">
+        <div class="header-info">
+            <p>COLEGIO DE INFORMÁTICA JUSTO RUFINO BAUTISTA</p>
+            <h1>Evaluación Parcial - Tercera Unidad</h1>
+            <p>Curso: Diseño Computarizado I | Cuarto Bachillerato en Diseño Gráfico</p>
+        </div>
+        <div class="logo-container">
+            <!-- Logo oficial desde la carpeta public -->
+            <img src="public/descarga.png" alt="Logo JRB" onerror="this.src='https://placehold.co/100x100?text=J.R.B.'">
+        </div>
+    </header>
+
+    <section class="student-section">
+        <div class="field">
+            <label for="nombre">Nombre Completo del Estudiante</label>
+            <input type="text" id="nombre" placeholder="Escriba sus apellidos y nombres completos aquí..." required>
+        </div>
+    </section>
+
+    <!-- Banner de Validación de Formulario -->
+    <div id="validation-banner" class="error-message"></div>
+
+    <!-- I SERIE: VERDADERO O FALSO -->
+    <div class="serie">
+        <div class="serie-title">
+            <h2>I Serie: Anatomía Tipográfica y Psicología del Color (Verdadero o Falso)</h2>
+            <span class="badge-points">5 puntos</span>
+        </div>
+        <div class="instruction-box">
+            <strong>Instrucciones:</strong> Analice técnicamente cada una de las siguientes afirmaciones sobre morfología tipográfica, psicología del color e identidad marcaria. Seleccione <strong>Verdadero (V)</strong> o <strong>Falso (F)</strong> según corresponda. (1 punto por acierto)
+        </div>
+
+        <div class="question">
+            <p>1. El remate (o serif) es la pequeña terminación ornamental ubicada al extremo de las astas de una letra, aportando un aspecto clásico, académico y de alta legibilidad en textos impresos.</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q1" value="si"> Verdadero (V)</label>
+                <label class="option-item"><input type="radio" name="q1" value="no"> Falso (F)</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>2. En la anatomía de la letra, el término "X-Height" o Altura de X define la distancia vertical comprendida desde la línea base hasta la altura de las letras mayúsculas de una fuente.</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q2" value="no"> Verdadero (V)</label>
+                <label class="option-item"><input type="radio" name="q2" value="si"> Falso (F)</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>3. Las tipografías Sans Serif (de palo seco) transmiten sensaciones de modernidad, limpieza, minimalismo y son las más recomendadas para lecturas prolongadas en pantallas digitales.</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q3" value="si"> Verdadero (V)</label>
+                <label class="option-item"><input type="radio" name="q3" value="no"> Falso (F)</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>4. De acuerdo con la psicología del color, el color Amarillo se asocia directamente con sensaciones de paz, salud y ecología, siendo el estándar en hospitales y marcas orgánicas.</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q4" value="no"> Verdadero (V)</label>
+                <label class="option-item"><input type="radio" name="q4" value="si"> Falso (F)</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>5. El "Ojo" o contraforma tipográfica es el espacio interno total o parcialmente cerrado que se genera dentro de caracteres específicos como la "O", la "A" o la "P".</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q5" value="si"> Verdadero (V)</label>
+                <label class="option-item"><input type="radio" name="q5" value="no"> Falso (F)</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- II SERIE: SELECCIÓN MÚLTIPLE -->
+    <div class="serie">
+        <div class="serie-title">
+            <h2>II Serie: Jerarquía Visual y Pesos (Selección Múltiple)</h2>
+            <span class="badge-points">5 puntos</span>
+        </div>
+        <div class="instruction-box">
+            <strong>Instrucciones:</strong> Lea detenidamente cada enunciado y seleccione las <strong>dos respuestas correctas</strong> que cumplan de forma adecuada con las reglas fundamentales de jerarquía y diagramación. (1 punto por reactivo completo; 0.5 puntos por acierto parcial)
+        </div>
+
+        <div class="question">
+            <p>1. ¿Cuáles de los siguientes elementos visuales aumentan de forma inmediata el "Peso Visual" de un elemento en un cartel publicitario?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="checkbox" name="q11" value="si"> Un tamaño significativamente mayor en comparación con los elementos circundantes</label>
+                <label class="option-item"><input type="checkbox" name="q11" value="no"> El uso de tipografías muy delgadas (light) y de colores pasteles planos</label>
+                <label class="option-item"><input type="checkbox" name="q11" value="si"> El uso de un color altamente vibrante o contrastante sobre un fondo neutro</label>
+                <label class="option-item"><input type="checkbox" name="q11" value="no"> Situar el elemento de forma exclusiva en el borde exterior derecho de la composición</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>2. De acuerdo con el diseño editorial y de carteles, ¿qué contenidos de información se agrupan técnicamente en el "Segundo Nivel" de lectura?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="checkbox" name="q12" value="si"> Los subtítulos que desglosan o amplían el tema principal</label>
+                <label class="option-item"><input type="checkbox" name="q12" value="no"> El titular dominante (slogan principal) del anuncio</label>
+                <label class="option-item"><input type="checkbox" name="q12" value="si"> Datos clave intermedios de ubicación, fechas o ponentes de un evento</label>
+                <label class="option-item"><input type="checkbox" name="q12" value="no"> Los textos legales pequeños que van en el pie de página (derechos de autor)</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>3. ¿Cuáles son ventajas de aplicar un riguroso sistema de "Jerarquía Visual" en un cartel publicitario según la Guía 2?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="checkbox" name="q13" value="si"> Guiar el recorrido visual del lector de forma ordenada e intencionada por la pieza de diseño</label>
+                <label class="option-item"><input type="checkbox" name="q13" value="no"> Conseguir que el archivo de imagen vectorial ocupe menos espacio físico en el disco duro</label>
+                <label class="option-item"><input type="checkbox" name="q13" value="si"> Permitir que el espectador entienda el mensaje fundamental en menos de 3 segundos</label>
+                <label class="option-item"><input type="checkbox" name="q13" value="no"> Reemplazar por completo el uso de la psicología del color en la marca</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>4. ¿Qué herramientas de formato tipográfico permiten diferenciar jerárquicamente un título de un bloque de texto corrido usando la misma familia de fuentes?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="checkbox" name="q14" value="no"> Convertir todo el bloque de texto a minúsculas cursivas</label>
+                <label class="option-item"><input type="checkbox" name="q14" value="si"> Modificar el peso o variante tipográfica (ej: aplicar variante Bold o Black al título)</label>
+                <label class="option-item"><input type="checkbox" name="q14" value="si"> Aplicar una diferencia de escala considerable de tamaño (ej: título 36 pts vs cuerpo 10 pts)</label>
+                <label class="option-item"><input type="checkbox" name="q14" value="no"> Desactivar el sistema de capas de la mesa de trabajo de Inkscape</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <p>5. Al realizar el proceso de diagramación, ¿cuáles de estos elementos estructuran la composición y la legibilidad general de la página de revista?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="checkbox" name="q15" value="si"> El espacio en blanco o zonas de silencio visual que permiten que el ojo descanse</label>
+                <label class="option-item"><input type="checkbox" name="q15" value="no"> El número de nodos vectoriales creados en el fondo de la página</label>
+                <label class="option-item"><input type="checkbox" name="q15" value="si"> Un alineamiento consistente y lógico de todos los textos con la retícula base</label>
+                <label class="option-item"><input type="checkbox" name="q15" value="no"> Usar una paleta de más de 8 colores brillantes para saturar el lienzo</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- III SERIE: SELECCIÓN ÚNICA -->
+    <div class="serie">
+        <div class="serie-title">
+            <h2>III Serie: Sistemas de Retículas y Síntesis Gráfica (Selección Única)</h2>
+            <span class="badge-points">5 puntos</span>
+        </div>
+        <div class="instruction-box">
+            <strong>Instrucciones:</strong> Complete conceptualmente cada una de las interrogantes de diseño. Seleccione del menú desplegable la única respuesta correcta de acuerdo a lo estudiado en las Guías 3 y 4. (1 punto por acierto)
+        </div>
+
+        <div class="question">
+            <p>1. ¿Cómo se define a la estructura invisible de líneas verticales y horizontales que organiza espacialmente el contenido de un diseño de revista?</p>
+            <select class="select-input" id="q16">
+                <option value="">-- Seleccione una respuesta --</option>
+                <option value="si">La Retícula (Grid)</option>
+                <option value="no">La Paleta Cromática</option>
+                <option value="no">El Boceto a mano alzada</option>
+            </select>
+        </div>
+
+        <div class="question">
+            <p>2. ¿Cómo se conoce técnicamente al espacio en blanco obligatorio que se deja entre dos columnas adyacentes para evitar que la información se amontone?</p>
+            <select class="select-input" id="q17">
+                <option value="">-- Seleccione una respuesta --</option>
+                <option value="no">Margen exterior</option>
+                <option value="si">Medianil (Gutter)</option>
+                <option value="no">Línea de flujo</option>
+            </select>
+        </div>
+
+        <div class="question">
+            <p>3. ¿Qué es la "Síntesis Gráfica" en el proceso de diseño de marcas y logotipos?</p>
+            <select class="select-input" id="q18">
+                <option value="">-- Seleccione una respuesta --</option>
+                <option value="no">El proceso de calcar una fotografía usando todos sus colores realistas.</option>
+                <option value="si">El arte de simplificar formas complejas eliminando detalles innecesarios hasta dejar lo esencial.</option>
+                <option value="no">Un tipo de filtro digital para oscurecer imágenes.</option>
+            </select>
+        </div>
+
+        <div class="question">
+            <p>4. ¿Por qué es vital que un diseñador respete la retícula modular y que ningún elemento sobresalga sin justificación?</p>
+            <select class="select-input" id="q19">
+                <option value="">-- Seleccione una respuesta --</option>
+                <option value="no">Porque reduce el tamaño de los píxeles del cartel digital.</option>
+                <option value="si">Para mantener la unidad visual, orden, proporción y consistencia de la composición.</option>
+                <option value="no">Para que la tipografía se guarde automáticamente en formato vectorial.</option>
+            </select>
+        </div>
+
+        <div class="question">
+            <p>5. ¿Cuál es el formato técnico ideal para exportar un logotipo profesional con el fin de que nunca pierda calidad al agrandarse?</p>
+            <select class="select-input" id="q20">
+                <option value="">-- Seleccione una respuesta --</option>
+                <option value="no">Formato de mapa de bits (JPG/PNG)</option>
+                <option value="si">Formato Vectorial (SVG/PDF/EPS)</option>
+                <option value="no">Formato de compresión de audio (MP3)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- IV SERIE: ESTUDIO DE CASO -->
+    <div class="serie">
+        <div class="serie-title">
+            <h2>IV Serie: Aplicación Práctica e Identidad Marcaria (Estudios de Caso)</h2>
+            <span class="badge-points">5 puntos</span>
+        </div>
+        <div class="instruction-box">
+            <strong>Instrucciones:</strong> Analice de forma técnica y profesional cada una de las situaciones reales planteadas de la Guía 1 a la 5. Seleccione la respuesta que resuelva de forma correcta el reto de diseño planteado. (1 punto por acierto)
+        </div>
+
+        <div class="case-container">
+            <strong>CASO A: EL LOGOTIPO DEL BUFETE DE ABOGADOS</strong><br>
+            La prestigiosa e histórica firma de abogados "Justicia & Asociados" le contrata para rediseñar su marca gráfica. Desean proyectar de forma estricta valores institucionales de seriedad, confianza, experiencia tradicional y alto estatus legal.
+        </div>
+
+        <div class="question">
+            <p>1. ¿Qué combinación tipográfica y de color es la idónea según lo aprendido en las Guías 1 y 5?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q26" value="no"> Una tipografía manuscrita Script color naranja brillante para verse dinámicos.</label>
+                <label class="option-item"><input type="radio" name="q26" value="si"> Una tipografía Serif elegante con remates delgados en color azul oscuro (Navy) o tonos dorados</label>
+                <label class="option-item"><input type="radio" name="q26" value="no"> Una tipografía Display ruidosa con efectos de color RGB para mayor impacto.</label>
+            </div>
+        </div>
+
+        <div class="case-container">
+            <strong>CASO B: COMUNICACIÓN DE EMERGENCIA</strong><br>
+            Se le solicita diseñar de urgencia un cartel de prevención sísmica para la comunidad escolar. Este cartel debe ubicarse en los pasillos principales y su mensaje fundamental de "ZONA SEGURA" debe comprenderse de forma inmediata a larga distancia.
+        </div>
+
+        <div class="question">
+            <p>2. ¿Cómo estructuraría los niveles de lectura aplicando pesos visuales de forma coherente?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q27" value="no"> Escribir toda la información con el mismo tamaño y peso tipográfico en color gris claro.</label>
+                <label class="option-item"><input type="radio" name="q27" value="si"> Un primer nivel de lectura dominante (ZONA SEGURA) en escala gigante Sans Serif de color verde vibrante sobre fondo blanco</label>
+                <label class="option-item"><input type="radio" name="q27" value="no"> Destacar el nombre del director del colegio en primer nivel y las zonas de seguridad en legales pequeños.</label>
+            </div>
+        </div>
+
+        <div class="case-container">
+            <strong>CASO C: LA CLÍNICA INFANTIL DE ODONTOLOGÍA</strong><br>
+            Una nueva clínica dental infantil llamada "Dientitos Felices" le pide que defina la paleta de colores para su consultorio y logotipo. Buscan calmar el miedo natural de los niños al odontólogo y transmitir alegría, limpieza y salud.
+        </div>
+
+        <div class="question">
+            <p>3. ¿Qué paleta cromática aplica de forma correcta la psicología del color para solucionar este caso?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q28" value="si"> Tonos celestes suaves (que transmiten tranquilidad) combinados con verde claro o amarillo alegre</label>
+                <label class="option-item"><input type="radio" name="q28" value="no"> Tonos rojo sangre y negro brillante para denotar agresividad e impacto visual.</label>
+                <label class="option-item"><input type="radio" name="q28" value="no"> Usar exclusivamente tonos grises apagados e industriales para que luzca aburrido.</label>
+            </div>
+        </div>
+
+        <div class="case-container">
+            <strong>CASO D: SISTEMA EDITORIAL CONGESTIONADO</strong><br>
+            Está diseñando la página de revista institucional de la feria científica del 06 de junio. Al colocar el texto inicial, este queda excesivamente amontonado con las fotos secundarias, dificultando enormemente la lectura de los artículos.
+        </div>
+
+        <div class="question">
+            <p>4. ¿Qué parámetro técnico de la retícula debe ajustar de forma inmediata en Inkscape para solucionar el desorden?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q29" value="no"> Modificar las astas tipográficas de los títulos.</label>
+                <label class="option-item"><input type="radio" name="q29" value="si"> Incrementar de forma controlada el ancho del medianil (Gutter) y estructurar los textos alineados a las columnas</label>
+                <label class="option-item"><input type="radio" name="q29" value="no"> Eliminar la mitad de las letras de forma destructiva en el lienzo.</label>
+            </div>
+        </div>
+
+        <div class="case-container">
+            <strong>SITUACIÓN E: DISEÑO DE UN LOGO ANIMAL DE ALTO IMPACTO</strong><br>
+            Para el equipo de robótica escolar, deciden usar como mascota a un halcón. Desean un logotipo que sea moderno, rápido, muy simplificado pero altamente reconocible, que se pueda estampar en gorras, camisas o pines de metal muy pequeños.
+        </div>
+
+        <div class="question">
+            <p>5. ¿Qué proceso técnico de diseño debe seguir para lograr una excelente adaptabilidad física?</p>
+            <div class="options-container">
+                <label class="option-item"><input type="radio" name="q30" value="no"> Dibujar el halcón de forma ultra realista con pluma digital, incluyendo cada pluma individual y degradados complejos.</label>
+                <label class="option-item"><input type="radio" name="q30" value="no"> Utilizar un generador automático de inteligencia artificial de internet sin hacer bocetos previos.</label>
+                <label class="option-item"><input type="radio" name="q30" value="si"> Realizar una síntesis gráfica en el cuaderno, simplificando el ave a sus líneas de fuerza más importantes y trazar el logo en formato vectorial (nodos)</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-container">
+        <button class="btn-submit" onclick="calificarYGenerar()">FINALIZAR EVALUACIÓN Y GENERAR COMPROBANTE</button>
+        <div id="result-banner"></div>
+    </div>
+</div>
+
+<script {is_jsx="false"}>
+    function calificarYGenerar() {
+        const nombreInput = document.getElementById('nombre');
+        const validationBanner = document.getElementById('validation-banner');
+        const resultBanner = document.getElementById('result-banner');
+        const nombre = nombreInput.value.trim();
+
+        // Limpiar estados de alerta previos
+        validationBanner.style.display = 'none';
+        validationBanner.innerText = '';
+
+        if (!nombre || nombre.length < 5) {
+            validationBanner.style.display = 'block';
+            validationBanner.innerText = "⚠️ Por favor, ingrese sus apellidos y nombres completos para poder procesar y calificar la evaluación.";
+            nombreInput.focus();
+            return;
+        }
+
+        let puntos = 0;
+
+        // Serie I: Verdadero o Falso (5 ítems, 1 punto c/u -> Max 5.0)
+        if (document.querySelector('input[name="q1"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q2"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q3"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q4"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q5"]:checked')?.value === 'si') puntos += 1;
+
+        // Serie II: Selección Múltiple (5 ítems, 1 punto c/u -> Max 5.0: 0.5 puntos por cada check correcto)
+        // Item 11 (si = a, c)
+        const q11Options = document.querySelectorAll('input[name="q11"]:checked');
+        let q11CorrectCount = 0;
+        q11Options.forEach(opt => { if (opt.value === 'si') q11CorrectCount++; });
+        if (q11Options.length <= 2) { puntos += q11CorrectCount * 0.5; }
+
+        // Item 12 (si = a, c)
+        const q12Options = document.querySelectorAll('input[name="q12"]:checked');
+        let q12CorrectCount = 0;
+        q12Options.forEach(opt => { if (opt.value === 'si') q12CorrectCount++; });
+        if (q12Options.length <= 2) { puntos += q12CorrectCount * 0.5; }
+
+        // Item 13 (si = a, c)
+        const q13Options = document.querySelectorAll('input[name="q13"]:checked');
+        let q13CorrectCount = 0;
+        q13Options.forEach(opt => { if (opt.value === 'si') q13CorrectCount++; });
+        if (q13Options.length <= 2) { puntos += q13CorrectCount * 0.5; }
+
+        // Item 14 (si = b, c)
+        const q14Options = document.querySelectorAll('input[name="q14"]:checked');
+        let q14CorrectCount = 0;
+        q14Options.forEach(opt => { if (opt.value === 'si') q14CorrectCount++; });
+        if (q14Options.length <= 2) { puntos += q14CorrectCount * 0.5; }
+
+        // Item 15 (si = a, c)
+        const q15Options = document.querySelectorAll('input[name="q15"]:checked');
+        let q15CorrectCount = 0;
+        q15Options.forEach(opt => { if (opt.value === 'si') q15CorrectCount++; });
+        if (q15Options.length <= 2) { puntos += q15CorrectCount * 0.5; }
+
+        // Serie III: Selección Única (5 ítems, 1 punto c/u -> Max 5.0)
+        if (document.getElementById('q16').value === 'si') puntos += 1;
+        if (document.getElementById('q17').value === 'si') puntos += 1;
+        if (document.getElementById('q18').value === 'si') puntos += 1;
+        if (document.getElementById('q19').value === 'si') puntos += 1;
+        if (document.getElementById('q20').value === 'si') puntos += 1;
+
+        // Serie IV: Estudio de Caso (5 ítems, 1 punto c/u -> Max 5.0)
+        if (document.querySelector('input[name="q26"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q27"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q28"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q29"]:checked')?.value === 'si') puntos += 1;
+        if (document.querySelector('input[name="q30"]:checked')?.value === 'si') puntos += 1;
+
+        // Asegurarse de no exceder los 20 puntos por decimales de coma flotante
+        puntos = Math.min(20, Math.round(puntos * 10) / 10);
+
+        // Desplegar resultado en pantalla
+        resultBanner.style.display = 'block';
+        resultBanner.innerText = `¡EXAMEN REGISTRADO CON ÉXITO! NOTA OBTENIDA: ${puntos} / 20 PUNTOS. Tu comprobante PDF se está descargando automáticamente...`;
+
+        // Generar PDF profesional
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Encabezado decorativo del comprobante
+        doc.setFillColor(30, 41, 59); // Slate 800 (#1e293b)
+        doc.rect(0, 0, 210, 42, 'F');
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(20);
+        doc.text("COLEGIO DE INFORMÁTICA J.R.B.", 105, 18, { align: "center" });
+        doc.setFontSize(11);
+        doc.text("COMPROBANTE OFICIAL DE EVALUACIÓN DIGITAL - DISEÑO GRÁFICO I", 105, 28, { align: "center" });
+
+        // Bloque de metadatos académicos
+        doc.setTextColor(15, 23, 42); // Slate 900
+        doc.setFontSize(12);
+        doc.text("DATOS ACADÉMICOS DEL ESTUDIANTE", 20, 58);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.text(`Nombre Completo: ${nombre.toUpperCase()}`, 20, 68);
+        doc.text("Curso: Diseño Computarizado I (Tipografía, Composición, Retículas y Color)", 20, 75);
+        doc.text("Grado: Cuarto Bachillerato en Diseño Gráfico", 20, 82);
+        doc.text(`Fecha y Hora de Emisión: ${new Date().toLocaleString()}`, 20, 89);
+
+        // Divisor visual
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(226, 232, 240);
+        doc.line(20, 98, 190, 98);
+
+        // Calificación final sobre 20 puntos
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(26);
+        doc.setTextColor(108, 92, 231); // Purple
+        doc.text(`CALIFICACIÓN: ${puntos} / 20 PUNTOS`, 105, 120, { align: "center" });
+
+        // Consideraciones éticas y de entrega
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text("Este documento sirve como evidencia inalterable de la realización de la evaluación digital", 105, 140, { align: "center" });
+        doc.text("correspondiente a las Guías de la 1 a la 5 en el Laboratorio de Diseño Gráfico.", 105, 145, { align: "center" });
+        doc.text("Instrucciones: Guarde este comprobante y súbalo a la tarea en Google Classroom.", 105, 152, { align: "center" });
+
+        // Código de seguridad hash unificado e inalterable
+        const securityHash = "DIS1B-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+        doc.setFont("courier", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`CÓDIGO DE VALIDACIÓN UNIFICADO: ${securityHash}`, 20, 180);
+
+        // Descarga automatizada del archivo
+        doc.save(`Diseno_GraficoI_4Baco_${nombre.replace(/\s+/g, '_')}.pdf`);
+    }
+</script>
+
+</body>
+</html>
